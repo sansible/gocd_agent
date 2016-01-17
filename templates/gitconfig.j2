@@ -1,0 +1,5 @@
+[user]
+	name = {{ gocd_agent.git.user | default(gocd_agent.user) }}
+	email = {{ gocd_agent.git.email }}
+[url "git@github.com:"]
+	insteadOf = https://github.com/

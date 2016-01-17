@@ -1,0 +1,71 @@
+---
+
+- name: Set hostname
+  become: yes
+  lineinfile:
+    dest: /etc/hosts
+    line: "127.0.0.1 {{ ansible_hostname }}"
+
+- name: Install essential packages
+  become: yes
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - build-essential
+    - git
+    - python-dev
+    - python-setuptools
+    - ssmtp
+
+- name: Add GO CD apt repository
+  become: yes
+  apt_repository:
+    repo: deb http://dl.bintray.com/gocd/gocd-deb/ /
+    state: present
+
+- name: Install go-agent
+  become: yes
+  apt:
+    name: "go-agent={{ gocd_agent.version }}"
+    state: present
+    force: yes
+
+- name: Ensure that the default agent is stopped
+  become: yes
+  service:
+    name: go-agent
+    state: stopped
+
+- name: Create soft links to startup scripts for additional agents
+  become: yes
+  file:
+    state: link
+    src: /etc/init.d/go-agent
+    dest: /etc/init.d/go-agent-{{ item }}
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Create soft links to /usr for additional agents
+  become: yes
+  file:
+    state: link
+    src: /usr/share/go-agent
+    dest: /usr/share/go-agent-{{ item }}
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Create working directories for additional agents
+  become: yes
+  file:
+    state: directory
+    path: "{{ gocd_agent.user_dir }}/work/go-agent-{{ item }}"
+    owner: "{{ gocd_agent.user }}"
+    group: "{{ gocd_agent.user }}"
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Create log directories for additional agents
+  become: yes
+  file:
+    state: directory
+    path: /var/log/go-agent-{{ item }}
+    owner: "{{ gocd_agent.user }}"
+    group: "{{ gocd_agent.user }}"
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"

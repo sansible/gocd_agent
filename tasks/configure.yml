@@ -1,0 +1,32 @@
+---
+
+- name: Ensures go-agent configuration
+  become: yes
+  template:
+    src: defaults.j2
+    dest: /etc/default/go-agent
+    owner: "{{ gocd_agent.user }}"
+    group: "{{ gocd_agent.user }}"
+  notify:
+    - restart go-agent
+
+- name: Configure Git for Go CD user
+  become: yes
+  become_user: "{{ gocd_agent.user }}"
+  template:
+    src: gitconfig.j2
+    dest: /home/{{ gocd_agent.user }}/.gitconfig
+
+- name: Create defaults file for additional agents
+  become: yes
+  template:
+    src: defaults.j2
+    dest: /etc/default/go-agent-{{ item }}
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Ensure all the agents are started
+  become: yes
+  service:
+    name: "go-agent-{{ item }}"
+    state: started
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"

@@ -1,0 +1,23 @@
+---
+
+gocd_agent:
+  version: "15.1.*"
+  name: default
+  user: go
+  user_dir: /home/go
+
+  java_home: /usr/lib/jvm/java-7-oracle/jre
+  server: localhost
+  port: 8153
+
+  agent_max_mem: 256m
+  agent_mem: 128m
+  no_of_agents: 3
+  # eg. s3://ansible-vars/gocd/mgt-tst
+  ssh_key_s3_path: "changeme"
+
+  git:
+    email: gocd@example.com
+
+  dependencies:
+    skip_java: no

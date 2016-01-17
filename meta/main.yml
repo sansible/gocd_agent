@@ -1,0 +1,32 @@
+---
+
+galaxy_info:
+  author: "Wojtek Oledzki"
+  description: "Install the Go Continuous Delivery agent."
+  license: MIT
+  min_ansible_version: 1.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+  categories:
+    - development
+    - cd
+
+dependencies:
+  - name: ansible-city.users_and_groups
+    src: https://github.com/ansible-city/users_and_groups.git
+    scm: git
+    users_and_groups:
+      users:
+        - name: "{{ gocd_agent.user }}"
+          gecos: Go CD user
+    tags:
+      - build
+
+  - name: ansible-city.java
+    src: https://github.com/ansible-city/java.git
+    scm: git
+    tags:
+      - build
+    when: not gocd_agent.dependencies.skip_java

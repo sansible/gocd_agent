@@ -1,0 +1,21 @@
+---
+
+- name: start go-agent
+  sudo: yes
+  service:
+    name: go-agent
+    state: started
+
+- name: stop go-agent
+  sudo: yes
+  service:
+    name: go-agent
+    state: stopped
+
+- name: restart go-agent
+  sudo: yes
+  service:
+    name: go-agent-{{ item }}
+    state: restarted
+  with_sequence: 
+    count={{ gocd_agent.no_of_agents }}
