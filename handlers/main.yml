@@ -17,5 +17,5 @@
   service:
     name: go-agent-{{ item }}
     state: restarted
-  with_sequence: 
+  with_sequence:
     count={{ gocd_agent.no_of_agents }}
