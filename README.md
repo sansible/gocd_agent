@@ -1,14 +1,14 @@
-# GO CD Server
+# Go CD Agent
 
-Master: ![Build Status](https://travis-ci.org/ansible-city/gocd_agent.svg?branch=master)  
-Develop: ![Build Status](https://travis-ci.org/ansible-city/gocd_agent.svg?branch=develop)
+Master: [![Build Status](https://travis-ci.org/ansible-city/gocd_agent.svg?branch=master)](https://travis-ci.org/ansible-city/gocd_agent)  
+Develop: [![Build Status](https://travis-ci.org/ansible-city/gocd_agent.svg?branch=develop)](https://travis-ci.org/ansible-city/gocd_agent)
 
 * [ansible.cfg](#ansible-cfg)
-* [Dependencies](#dependencies)
+* [Installation and Dependencies](#installation-and-dependencies)
 * [Tags](#tags)
 * [Examples](#examples)
 
-This roles installs GO CD agent.
+This roles installs Go CD Agent.
 
 For more information about GO CD please visit [go.cd/](http://www.go.cd/).
 
@@ -28,19 +28,21 @@ hash_behaviour = merge
 
 
 
-## Dependencies
+## Installation and Dependencies
 
-To install dependencies, add this to your roles.yml
+This role has a "java" dependency. You can let this role install Oracle
+Java 7, or install it yourself and set `gocd_agent.dependencies.skip_java`
+to `yes`.
+
+To install this role run `ansible-galaxy install ansible-city.gocd_agent`
+or add this to your `roles.yml`
 
 ```YAML
----
-
 - name: ansible-city.gocd_agent
-  src: git+git@github.com:ansible-city/gocd_agent.git
-  version: origin/master # or any other tag/branch
+  version: v1.0
 ```
 
-and run `ansible-galaxy install -p . -r roles.yml`
+and run `ansible-galaxy install -p ./roles -r roles.yml`
 
 
 
@@ -75,5 +77,5 @@ To simply install GO CD agent:
   roles:
     - name: ansible-city.gocd_agent
       gocd_agent:
-        server: IP.OR.URL.OF.THE.SERVER
+        server: IP.OR.URL.OF.THE.GOCD.SERVER
 ```

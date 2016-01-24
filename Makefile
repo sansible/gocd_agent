@@ -5,6 +5,12 @@ all: test clean
 
 test: test_deps vagrant_up
 
+watch:
+	while sleep 1; do \
+		find defaults/ handlers/ meta/ tasks/ templates/ \
+		| entr -d make test; \
+	done
+
 integration_test: clean integration_test_deps vagrant_up clean
 
 test_deps:
