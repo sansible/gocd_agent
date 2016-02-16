@@ -1,12 +1,66 @@
 ---
 
+- name: Set hostname
+  become: yes
+  lineinfile:
+    dest: /etc/hosts
+    line: "127.0.0.1 {{ ansible_hostname }}"
+
 - name: Ensures go-agent configuration
   become: yes
   template:
-    src: defaults.j2
     dest: /etc/default/go-agent
-    owner: "{{ gocd_agent.user }}"
     group: "{{ gocd_agent.user }}"
+    owner: "{{ gocd_agent.user }}"
+    src: defaults.j2
+  notify:
+    - restart go-agent
+
+- name: Grab IP of GOCD Server
+  shell: "aws ec2 describe-instances --region eu-west-1 --filters {{ gocd_agent.aws.gocd_server_lookup_filter }} --output text --query 'Reservations[*].Instances[*].PrivateIpAddress'"
+  register: gocd_server_ip
+  when: gocd_agent.aws.gocd_server_lookup_filter
+
+- name: Set IP of GOCD server
+  set_fact:
+    gocd_agent:
+      server: "{{ gocd_server_ip.stdout }}"
+  when: gocd_agent.aws.gocd_server_lookup_filter
+
+- name: Copy secrets from S3
+  sudo: yes
+  sudo_user: "{{ gocd_agent.user }}"
+  shell: "aws s3 cp {{ item.s3_path }} {{ item.local_path }}"
+  args:
+    creates: "{{ item.local_path }}"
+  with_items: gocd_agent.aws.s3_secret_files
+
+- name: Secure secrets from S3
+  sudo: yes
+  file:
+    group: "{{ gocd_agent.user }}"
+    mode: "{{ item.mode | default(0600) }}"
+    owner: "{{ gocd_agent.user }}"
+    path: "{{ item.local_path }}"
+  with_items: gocd_agent.aws.s3_secret_files
+
+- name: Add config folder for agetns
+  become: yes
+  become_user: "{{ gocd_agent.user }}"
+  file:
+    name: "/home/{{ gocd_agent.user }}/work/go-agent-{{ item }}/config"
+    state: directory
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  when: gocd_agent.auto_register.key
+
+- name: Configure auto registration
+  become: yes
+  become_user: "{{ gocd_agent.user }}"
+  template:
+    dest: "/home/{{ gocd_agent.user }}/work/go-agent-{{ item }}/config/autoregister.properties"
+    src: autoregister.properties.j2
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  when: gocd_agent.auto_register.key
   notify:
     - restart go-agent
 
@@ -14,14 +68,14 @@
   become: yes
   become_user: "{{ gocd_agent.user }}"
   template:
-    src: gitconfig.j2
     dest: /home/{{ gocd_agent.user }}/.gitconfig
+    src: gitconfig.j2
 
 - name: Create defaults file for additional agents
   become: yes
   template:
-    src: defaults.j2
     dest: /etc/default/go-agent-{{ item }}
+    src: defaults.j2
   with_sequence: count="{{ gocd_agent.no_of_agents }}"
 
 - name: Ensure all the agents are started

@@ -1,7 +1,7 @@
 # Go CD Agent
 
-Master: [![Build Status](https://travis-ci.org/ansible-city/gocd_agent.svg?branch=master)](https://travis-ci.org/ansible-city/gocd_agent)  
-Develop: [![Build Status](https://travis-ci.org/ansible-city/gocd_agent.svg?branch=develop)](https://travis-ci.org/ansible-city/gocd_agent)
+Master: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=master)](https://travis-ci.org/sansible/gocd_agent)  
+Develop: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=develop)](https://travis-ci.org/sansible/gocd_agent)
 
 * [ansible.cfg](#ansible-cfg)
 * [Installation and Dependencies](#installation-and-dependencies)
@@ -34,11 +34,11 @@ This role has a "java" dependency. You can let this role install Oracle
 Java 7, or install it yourself and set `gocd_agent.dependencies.skip_java`
 to `yes`.
 
-To install this role run `ansible-galaxy install ansible-city.gocd_agent`
+To install this role run `ansible-galaxy install sansible.gocd_agent`
 or add this to your `roles.yml`
 
 ```YAML
-- name: ansible-city.gocd_agent
+- name: sansible.gocd_agent
   version: v1.0
 ```
 
@@ -75,7 +75,37 @@ To simply install GO CD agent:
         - build
 
   roles:
-    - name: ansible-city.gocd_agent
+    - name: sansible.gocd_agent
       gocd_agent:
         server: IP.OR.URL.OF.THE.GOCD.SERVER
+```
+
+Build GO CD agent for AWS ASG:
+
+```YAML
+- name: Install GO CD Agent
+  hosts: sandbox
+
+  pre_tasks:
+    - name: Update apt
+      become: yes
+      apt:
+        cache_valid_time: 1800
+        update_cache: yes
+      tags:
+        - build
+
+  roles:
+    - name: sansible.gocd_agent
+      gocd_agent:
+        gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+        aws:
+          s3_secret_files:
+            - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa
+              local_path: "/home/go/.ssh"
+              mode: 0600
+            - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa.pub
+              local_path: "/home/go/.ssh"
+              mode: 0600
+
 ```

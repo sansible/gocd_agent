@@ -13,6 +13,6 @@
         - build
 
   roles:
-    - name: ansible-city.gocd_agent
+    - role: sansible.gocd_agent
       gocd_agent:
         no_of_agents: 2

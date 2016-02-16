@@ -10,11 +10,33 @@ gocd_agent:
   server: localhost
   port: 8153
 
-  agent_max_mem: 256m
-  agent_mem: 128m
-  no_of_agents: 3
-  # eg. s3://ansible-vars/gocd/mgt-tst
-  ssh_key_s3_path: "changeme"
+  agent_max_mem: "{{ (ansible_memtotal_mb / 3) | int }}m"
+  agent_mem: "{{ (ansible_memtotal_mb / 4) | int }}m"
+  no_of_agents: 2
+
+  auto_register:
+    key: ~
+    resources: ~
+    environments: ~
+    hostname: ~
+
+  # AWS specific
+  aws:
+    # if you want to lookup your gocd server automatically
+    # eg. Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+    gocd_server_lookup_filter: ~
+
+    # List of files that need to be copied and secured from S3
+    # These should be things like SSH keys, vault passes etc.
+    # eg.
+    # s3_secret_files:
+    #  - s3_path: s3://ansible-vars/gocd/mgt-prd/id_rsa
+    #    local_path: "/home/go/.ssh"
+    #    mode: 0600
+    #  - s3_path: s3://ansible-vars/gocd/mgt-prd/id_rsa.pub
+    #    local_path: "/home/go/.ssh"
+    #    mode: 0600
+    s3_secret_files: [ ]
 
   git:
     email: gocd@example.com
