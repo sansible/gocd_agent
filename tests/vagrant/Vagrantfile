@@ -1,6 +1,16 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require 'yaml'
+local_vars = {
+	'vagrant' => {
+		'priv_ip' => nil
+	}
+}.merge(
+	File.file?('local_vars.yml') ?
+	YAML.load_file('local_vars.yml') : {}
+)
+
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
@@ -10,6 +20,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box_check_update = false
 
 	config.ssh.forward_agent = true
+
+	if local_vars['vagrant']['priv_ip']
+		config.vm.network :private_network, ip: local_vars['vagrant']['priv_ip']
+	end
 
 	config.vm.provider :virtualbox do |vb|
 		vb.customize ["modifyvm", :id, "--memory", 1024]
@@ -22,6 +36,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	# Test "build" tag
 	config.vm.provision "ansible" do |ansible|
 		ansible.playbook = "test.yml"
+		ansible.extra_vars = local_vars
 		ansible.tags = [ "build" ]
 		ansible.verbose = "#{ENV['VERBOSE']}" if ENV['VERBOSE']
 	end
@@ -29,6 +44,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	# Test "configure" tag
 	config.vm.provision "ansible" do |ansible|
 		ansible.playbook = "test.yml"
+		ansible.extra_vars = local_vars
 		ansible.tags = [ "configure" ]
 		ansible.verbose = "#{ENV['VERBOSE']}" if ENV['VERBOSE']
 	end
