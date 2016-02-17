@@ -30,7 +30,7 @@
 - name: Copy secrets from S3
   sudo: yes
   sudo_user: "{{ gocd_agent.user }}"
-  shell: "aws s3 cp {{ item.s3_path }} {{ item.local_path }}"
+  shell: "aws s3 cp --region {{ gocd_agent.aws.region }} {{ item.s3_path }} {{ item.local_path }}"
   args:
     creates: "{{ item.local_path }}"
   with_items: gocd_agent.aws.s3_secret_files
@@ -43,6 +43,15 @@
     owner: "{{ gocd_agent.user }}"
     path: "{{ item.local_path }}"
   with_items: gocd_agent.aws.s3_secret_files
+
+- name: Configure SSH
+  become: yes
+  copy:
+    src: ssh_config
+    dest: "/home/{{ gocd_agent.user }}/.ssh/config"
+    group: "{{ gocd_agent.user }}"
+    owner: "{{ gocd_agent.user }}"
+    mode: "0600"
 
 - name: Add config folder for agetns
   become: yes
