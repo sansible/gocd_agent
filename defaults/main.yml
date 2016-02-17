@@ -1,18 +1,16 @@
 ---
 
 gocd_agent:
-  version: "15.1.*"
-  name: default
-  user: go
-  user_dir: /home/go
-
-  java_home: /usr/lib/jvm/java-7-oracle/jre
-  server: localhost
-  port: 8153
-
   agent_max_mem: "{{ (ansible_memtotal_mb / 3) | int }}m"
   agent_mem: "{{ (ansible_memtotal_mb / 4) | int }}m"
+  java_home: /usr/lib/jvm/java-7-oracle/jre
+  name: default
   no_of_agents: 2
+  port: 8153
+  server: localhost
+  user_dir: /home/go
+  user: go
+  version: "16.1.*"
 
   auto_register:
     key: ~
@@ -22,6 +20,7 @@ gocd_agent:
 
   # AWS specific
   aws:
+    region: eu-west-1
     # if you want to lookup your gocd server automatically
     # eg. Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
     gocd_server_lookup_filter: ~
