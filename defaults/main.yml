@@ -37,6 +37,13 @@ gocd_agent:
     #    mode: 0600
     s3_secret_files: [ ]
 
+    # List of profiles to configure in ~/.aws/credentials
+    # - name: production
+    #   config:
+    #     role_arn:
+    #     source_profile: default
+    profiles: []
+
   git:
     email: gocd@example.com
 
