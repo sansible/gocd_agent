@@ -16,3 +16,11 @@
     - role: sansible.gocd_agent
       gocd_agent:
         no_of_agents: 2
+        aws:
+          profiles:
+            - name: testProfile
+              config:
+                role_arn: "arn::::"
+                source_profile: default
+                s3:
+                  max_queue_size: 1000

@@ -107,5 +107,43 @@ Build GO CD agent for AWS ASG:
             - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa.pub
               local_path: "/home/go/.ssh"
               mode: 0600
+```
 
+Build Go CD agent with AWS profile configured
+
+```YAML
+- name: Install GO CD Agent
+  hosts: sandbox
+
+  pre_tasks:
+    - name: Update apt
+      become: yes
+      apt:
+        cache_valid_time: 1800
+        update_cache: yes
+      tags:
+        - build
+
+  roles:
+    - name: sansible.gocd_agent
+      gocd_agent:
+        gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+        aws:
+          profiles:
+            - name: production_access
+              config:
+                role_arn: "arn:aws:iam::123456654321:role/ReleaseBot"
+                source_profile: default
+                s3:
+                  max_queue_size: 1000
+```
+
+This will create the following ~/.aws/credentials
+
+```
+[production_access]
+s3 =
+  max_queue_size = 1000
+role_arn = arn:aws:iam::123456654321:role/ReleaseBot
+source_profile = default
 ```
