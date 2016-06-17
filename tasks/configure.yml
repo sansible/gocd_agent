@@ -1,10 +1,11 @@
 ---
 
-- name: Set hostname
+- name: Ensure hostname is resolvable
   become: yes
   lineinfile:
     dest: /etc/hosts
-    line: "127.0.0.1 {{ ansible_hostname }}"
+    line: "127.0.0.1 localhost {{ ansible_hostname }}"
+    regexp: ^127\.0\.0\.1
 
 - name: Ensures go-agent configuration
   become: yes
@@ -67,7 +68,16 @@
     dest: "/home/{{ gocd_agent.user }}/.ssh/config"
     group: "{{ gocd_agent.user }}"
     owner: "{{ gocd_agent.user }}"
-    mode: "0600"
+    mode: 0600
+
+- name: Configure SSH agent setup in bash profile
+  become: yes
+  template:
+    src: .bashrc.j2
+    dest: "/home/{{ gocd_agent.user }}/.bashrc"
+    group: "{{ gocd_agent.user }}"
+    owner: "{{ gocd_agent.user }}"
+    mode: 0644
 
 - name: Add config folder for agetns
   become: yes
@@ -93,7 +103,7 @@
   become: yes
   become_user: "{{ gocd_agent.user }}"
   template:
-    dest: /home/{{ gocd_agent.user }}/.gitconfig
+    dest: "/home/{{ gocd_agent.user }}/.gitconfig"
     src: gitconfig.j2
 
 - name: Create defaults file for additional agents

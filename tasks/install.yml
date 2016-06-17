@@ -1,10 +1,11 @@
 ---
 
-- name: Set hostname
+- name: Ensure hostname is resolvable
   become: yes
   lineinfile:
     dest: /etc/hosts
-    line: "127.0.0.1 {{ ansible_hostname }}"
+    line: "127.0.0.1 localhost {{ ansible_hostname }}"
+    regexp: ^127\.0\.0\.1
 
 - name: Install essential packages
   become: yes
@@ -30,9 +31,10 @@
     state: present
     force: yes
 
-- name: Ensure that the default agent is stopped
+- name: Ensure that the default agent is stopped and disabled
   become: yes
   service:
+    enabled: no
     name: go-agent
     state: stopped
 
