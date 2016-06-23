@@ -15,8 +15,18 @@
     - build-essential
     - git
     - python-dev
+    - python-pip
     - python-setuptools
     - ssmtp
+
+- name: Install AWS CLI
+  become: yes
+  pip:
+    name: "{{ item }}"
+  when: gocd_agent.aws.install_cli
+  with_items:
+    - awscli
+    - boto
 
 - name: Add GO CD apt repository
   become: yes

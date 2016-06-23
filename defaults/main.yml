@@ -21,6 +21,7 @@ gocd_agent:
   # AWS specific
   aws:
     region: eu-west-1
+    install_cli: yes
     # if you want to lookup your gocd server automatically
     # eg. Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
     gocd_server_lookup_filter: ~
