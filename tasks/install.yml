@@ -17,7 +17,6 @@
     - python-dev
     - python-pip
     - python-setuptools
-    - ssmtp
 
 - name: Install AWS CLI
   become: yes

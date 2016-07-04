@@ -8,6 +8,7 @@ gocd_agent:
   no_of_agents: 2
   port: 8153
   server: localhost
+  start_opts: ""
   user_dir: /home/go
   user: go
   version: "16.1.*"

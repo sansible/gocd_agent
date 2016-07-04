@@ -1,6 +1,7 @@
 # {{ ansible_managed }}
 export GO_SERVER={{ gocd_agent.server }}
 export GO_SERVER_PORT={{ gocd_agent.port }}
+export GO_AGENT_SYSTEM_PROPERTIES="{{ gocd_agent.start_opts }}"
 export JAVA_HOME={{ gocd_agent.java_home }}
 export AGENT_WORK_DIR={{ gocd_agent.user_dir }}/work/${SERVICE_NAME}
 export AGENT_MEM={{ gocd_agent.agent_mem }}
