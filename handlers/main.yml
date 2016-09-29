@@ -1,19 +1,19 @@
 ---
 
 - name: start go-agent
-  sudo: yes
+  become: yes
   service:
     name: go-agent
     state: started
 
 - name: stop go-agent
-  sudo: yes
+  become: yes
   service:
     name: go-agent
     state: stopped
 
 - name: restart go-agent
-  sudo: yes
+  become: yes
   service:
     name: go-agent-{{ item }}
     state: restarted
