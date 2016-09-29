@@ -28,4 +28,4 @@ dependencies:
     version: v1.0
     tags:
       - build
-    when: not gocd_agent.dependencies.skip_java
+    when: not "{{ gocd_agent.dependencies.skip_java }}"
