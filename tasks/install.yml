@@ -56,12 +56,35 @@
     name: go-agent
     state: stopped
 
-- name: Create soft links to startup scripts for additional agents
+- name: Copy go-agent startup script for additional agents
+  become: yes
+  command: "cp /etc/init.d/go-agent /etc/init.d/go-agent-{{ item }}"
+  args:
+    creates: "/etc/init.d/go-agent-{{ item }}"
+    warn: no
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Ensure startup scripts for additional agents have their own provider name
+  become: yes
+  lineinfile:
+    backrefs: yes
+    dest: "/etc/init.d/go-agent-{{ item }}"
+    line: "# Provides: go-agent-{{ item }}"
+    regexp: "^# Provides: go-agent$"
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Ensure perms on startup scripts for additional agents
   become: yes
   file:
-    state: link
-    src: /etc/init.d/go-agent
-    dest: /etc/init.d/go-agent-{{ item }}
+    mode: 754
+    path: "/etc/init.d/go-agent-{{ item }}"
+  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+
+- name: Ensure startup scripts for additional agents are enabled
+  become: yes
+  service:
+    enabled: yes
+    name: "go-agent-{{ item }}"
   with_sequence: count="{{ gocd_agent.no_of_agents }}"
 
 - name: Create soft links to /usr for additional agents

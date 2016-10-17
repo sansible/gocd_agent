@@ -1,5 +1,8 @@
 # Go CD Agent
 
+Please see the Sansible readme for information on how to 
+[contribure](https://github.com/sansible/sansible)
+
 Master: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=master)](https://travis-ci.org/sansible/gocd_agent)  
 Develop: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=develop)](https://travis-ci.org/sansible/gocd_agent)
 
@@ -8,7 +11,8 @@ Develop: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=d
 * [Tags](#tags)
 * [Examples](#examples)
 
-This roles installs Go CD Agent.
+This roles installs Go CD Agent, for GO CD Server installation please 
+see the [Sansible GO CD Server Role](https://github.com/sansible/gocd_server)
 
 For more information about GO CD please visit [go.cd/](http://www.go.cd/).
 

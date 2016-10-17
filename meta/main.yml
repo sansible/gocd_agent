@@ -10,13 +10,14 @@ galaxy_info:
       versions:
         - precise
         - trusty
+        - xenial
   categories:
     - development
     - cd
 
 dependencies:
   - role: sansible.users_and_groups
-    version: v1.0
+    version: v1.2
     users_and_groups:
       users:
         - name: "{{ gocd_agent.user }}"
@@ -28,4 +29,4 @@ dependencies:
     version: v1.0
     tags:
       - build
-    when: not "{{ gocd_agent.dependencies.skip_java }}"
+    when: not gocd_agent.dependencies.skip_java

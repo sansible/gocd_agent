@@ -24,3 +24,15 @@
                 source_profile: default
                 s3:
                   max_queue_size: 1000
+
+  post_tasks:
+    - name: Agents should already be started
+      become: yes
+      service:
+        name: "go-agent-{{ item }}"
+        state: started
+      register: agent_start_check
+      failed_when: agent_start_check.changed
+      with_sequence: count=2
+      tags:
+        - assert
