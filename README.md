@@ -1,6 +1,6 @@
 # Go CD Agent
 
-Please see the Sansible readme for information on how to 
+Please see the Sansible readme for information on how to
 [contribure](https://github.com/sansible/sansible)
 
 Master: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=master)](https://travis-ci.org/sansible/gocd_agent)  
@@ -11,10 +11,10 @@ Develop: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=d
 * [Tags](#tags)
 * [Examples](#examples)
 
-This roles installs Go CD Agent, for GO CD Server installation please 
+This roles installs Go CD Agent, for GO CD Server installation please
 see the [Sansible GO CD Server Role](https://github.com/sansible/gocd_server)
 
-For more information about GO CD please visit [go.cd/](http://www.go.cd/).
+For more information about GO CD please visit [gocd.io/](http://www.gocd.io/).
 
 
 
@@ -38,7 +38,7 @@ This role has a "java" dependency. You can let this role install Oracle
 Java 7, or install it yourself and set `gocd_agent.dependencies.skip_java`
 to `yes`.
 
-AWS CLI tools are also installed by default, you can turn this feature off 
+AWS CLI tools are also installed by default, you can turn this feature off
 by setting `gocd_agent.aws.install_cli` to `no`.
 
 To install this role run `ansible-galaxy install sansible.gocd_agent`
