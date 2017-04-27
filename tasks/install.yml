@@ -45,7 +45,7 @@
 - name: Install go-agent
   become: yes
   apt:
-    name: "go-agent={{ gocd_agent.version }}"
+    name: "go-agent={{ gocd_agent.version | regex_replace('^(.*?)\\*?$', '\\1*') }}"
     state: present
     force: yes
 

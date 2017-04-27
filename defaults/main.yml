@@ -11,7 +11,7 @@ gocd_agent:
   start_opts: ""
   user_dir: /home/go
   user: go
-  version: 16.1.*
+  version: 16.*
 
   auto_register:
     key: ~
