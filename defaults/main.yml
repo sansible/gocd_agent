@@ -3,7 +3,8 @@
 gocd_agent:
   agent_max_mem: "{{ (ansible_memtotal_mb / 3) | int }}m"
   agent_mem: "{{ (ansible_memtotal_mb / 4) | int }}m"
-  java_home: /usr/lib/jvm/java-7-oracle/jre
+  java_home: /usr/lib/jvm/java-8-oracle/jre
+  java_version: 8
   name: default
   no_of_agents: 2
   port: 8153

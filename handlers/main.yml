@@ -7,7 +7,7 @@
     state: started
   with_sequence:
     count={{ gocd_agent.no_of_agents }}
-    
+
 - name: stop go-agent
   become: yes
   service:
