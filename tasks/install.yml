@@ -31,7 +31,7 @@
 - name: Add GoCD Apt key
   become: yes
   apt_key:
-    keyserver: keyserver.ubuntu.com
+    keyserver: hkp://keyserver.ubuntu.com:80
     id: "{{ gocd_agent.repo.key_id }}"
     state: present
 
