@@ -6,6 +6,7 @@
     dest: /etc/hosts
     line: "127.0.0.1 localhost {{ ansible_hostname }}"
     regexp: ^127\.0\.0\.1
+  when: ansible_virtualization_type != 'docker'
 
 - name: Install essential packages
   become: yes
@@ -23,7 +24,7 @@
   become: yes
   pip:
     name: "{{ item }}"
-  when: "{{ gocd_agent.aws.install_cli }}"
+  when: sansible_gocd_agent_aws_install_cli
   with_items:
     - awscli
     - boto
@@ -32,20 +33,20 @@
   become: yes
   apt_key:
     keyserver: hkp://keyserver.ubuntu.com:80
-    id: "{{ gocd_agent.repo.key_id }}"
+    id: "{{ sansible_gocd_agent_repo_key_id }}"
     state: present
 
 - name: Install GoCD repo
   become: yes
   apt_repository:
-    repo: "{{ gocd_agent.repo.source }}"
+    repo: "{{ sansible_gocd_agent_repo_source }}"
     state: present
     update_cache: yes
 
 - name: Install go-agent
   become: yes
   apt:
-    name: "go-agent={{ gocd_agent.version | regex_replace('^(.*?)\\*?$', '\\1*') }}"
+    name: "go-agent={{ sansible_gocd_agent_version | regex_replace('^(.*?)\\*?$', '\\1*') }}"
     state: present
     force: yes
 
@@ -62,7 +63,7 @@
   args:
     creates: "/etc/init.d/go-agent-{{ item }}"
     warn: no
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Ensure startup scripts for additional agents have their own provider name
   become: yes
@@ -71,21 +72,21 @@
     dest: "/etc/init.d/go-agent-{{ item }}"
     line: "# Provides: go-agent-{{ item }}"
     regexp: "^# Provides: go-agent$"
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Ensure perms on startup scripts for additional agents
   become: yes
   file:
-    mode: 754
+    mode: 0754
     path: "/etc/init.d/go-agent-{{ item }}"
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Ensure startup scripts for additional agents are enabled
   become: yes
   service:
     enabled: yes
     name: "go-agent-{{ item }}"
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Create soft links to /usr for additional agents
   become: yes
@@ -93,22 +94,22 @@
     state: link
     src: /usr/share/go-agent
     dest: /usr/share/go-agent-{{ item }}
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Create working directories for additional agents
   become: yes
   file:
     state: directory
-    path: "{{ gocd_agent.user_dir }}/work/go-agent-{{ item }}"
-    owner: "{{ gocd_agent.user }}"
-    group: "{{ gocd_agent.user }}"
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+    path: "{{ sansible_gocd_agent_user_dir }}/work/go-agent-{{ item }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_user }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Create log directories for additional agents
   become: yes
   file:
     state: directory
     path: /var/log/go-agent-{{ item }}
-    owner: "{{ gocd_agent.user }}"
-    group: "{{ gocd_agent.user }}"
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_user }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"

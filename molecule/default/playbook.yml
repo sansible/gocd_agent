@@ -1,0 +1,20 @@
+---
+
+- name: Converge
+  hosts: all
+
+  pre_tasks:
+    - name: Install apt-transport-https
+      apt:
+        name: apt-transport-https
+        update_cache: yes
+
+  roles:
+    - role: gocd_agent
+      sansible_gocd_agent_aws_profiles:
+        - name: testProfile
+          config:
+            role_arn: "arn::::"
+            source_profile: default
+            s3:
+              max_queue_size: 1000

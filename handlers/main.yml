@@ -6,7 +6,7 @@
     name: go-agent-{{ item }}
     state: started
   with_sequence:
-    count={{ gocd_agent.no_of_agents }}
+    count={{ sansible_gocd_agent_no_of_agents }}
 
 - name: stop go-agent
   become: yes
@@ -14,7 +14,7 @@
     name: go-agent-{{ item }}
     state: stopped
   with_sequence:
-    count={{ gocd_agent.no_of_agents }}
+    count={{ sansible_gocd_agent_no_of_agents }}
 
 - name: restart go-agent
   become: yes
@@ -22,4 +22,4 @@
     name: go-agent-{{ item }}
     state: restarted
   with_sequence:
-    count={{ gocd_agent.no_of_agents }}
+    count={{ sansible_gocd_agent_no_of_agents }}

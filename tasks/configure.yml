@@ -6,104 +6,105 @@
     dest: /etc/hosts
     line: "127.0.0.1 localhost {{ ansible_hostname }}"
     regexp: ^127\.0\.0\.1
+  when: ansible_virtualization_type != 'docker'
 
 - name: Ensures go-agent configuration
   become: yes
   template:
     dest: /etc/default/go-agent
-    group: "{{ gocd_agent.user }}"
-    owner: "{{ gocd_agent.user }}"
+    group: "{{ sansible_gocd_agent_user }}"
+    owner: "{{ sansible_gocd_agent_user }}"
     src: defaults.j2
   notify:
     - restart go-agent
 
 - name: Grab IP of GOCD Server
-  shell: "aws ec2 describe-instances --region eu-west-1 --filters {{ gocd_agent.aws.gocd_server_lookup_filter }} --output text --query 'Reservations[*].Instances[*].PrivateIpAddress'"
+  command: "aws ec2 describe-instances --region eu-west-1 --filters {{ sansible_gocd_agent_aws_gocd_server_lookup_filter }} --output text --query 'Reservations[*].Instances[*].PrivateIpAddress'"
   register: gocd_server_ip
-  when: gocd_agent.aws.gocd_server_lookup_filter
+  when: sansible_gocd_agent_aws_gocd_server_lookup_filter
 
 - name: Set IP of GOCD server
   set_fact:
     gocd_agent:
       server: "{{ gocd_server_ip.stdout }}"
-  when: gocd_agent.aws.gocd_server_lookup_filter
+  when: sansible_gocd_agent_aws_gocd_server_lookup_filter
 
 - name: Copy secrets from S3
   become: yes
-  become_user: "{{ gocd_agent.user }}"
-  shell: "aws s3 cp --region {{ gocd_agent.aws.region }} {{ item.s3_path }} {{ item.local_path }}"
+  become_user: "{{ sansible_gocd_agent_user }}"
+  command: "aws s3 cp --region {{ sansible_gocd_agent_aws_region }} {{ item.s3_path }} {{ item.local_path }}"
   args:
     creates: "{{ item.local_path }}"
-  with_items: "{{ gocd_agent.aws.s3_secret_files }}"
+  with_items: "{{ sansible_gocd_agent_aws_s3_secret_files }}"
 
 - name: Secure secrets from S3
   become: yes
   file:
-    group: "{{ gocd_agent.user }}"
+    group: "{{ sansible_gocd_agent_user }}"
     mode: "{{ item.mode | default(0600) }}"
-    owner: "{{ gocd_agent.user }}"
+    owner: "{{ sansible_gocd_agent_user }}"
     path: "{{ item.local_path }}"
-  with_items: "{{ gocd_agent.aws.s3_secret_files }}"
+  with_items: "{{ sansible_gocd_agent_aws_s3_secret_files }}"
 
 - name: Ensure .aws folder
   become: yes
   file:
     state: directory
-    path: "/home/{{ gocd_agent.user }}/.aws"
-    owner: "{{ gocd_agent.user }}"
-    group: "{{ gocd_agent.user }}"
-  when: gocd_agent.aws.profiles
+    path: "/home/{{ sansible_gocd_agent_user }}/.aws"
+    owner: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_user }}"
+  when: sansible_gocd_agent_aws_profiles
 
 - name: Configure AWS credentials
   become: yes
   template:
-    dest: "/home/{{ gocd_agent.user }}/.aws/credentials"
+    dest: "/home/{{ sansible_gocd_agent_user }}/.aws/credentials"
     src: aws/credentials.j2
-  when: gocd_agent.aws.profiles
+  when: sansible_gocd_agent_aws_profiles
 
 - name: Configure SSH
   become: yes
   copy:
     src: ssh_config
-    dest: "/home/{{ gocd_agent.user }}/.ssh/config"
-    group: "{{ gocd_agent.user }}"
-    owner: "{{ gocd_agent.user }}"
+    dest: "/home/{{ sansible_gocd_agent_user }}/.ssh/config"
+    group: "{{ sansible_gocd_agent_user }}"
+    owner: "{{ sansible_gocd_agent_user }}"
     mode: 0600
 
 - name: Configure SSH agent setup in bash profile
   become: yes
   template:
     src: .bashrc.j2
-    dest: "/home/{{ gocd_agent.user }}/.bashrc"
-    group: "{{ gocd_agent.user }}"
-    owner: "{{ gocd_agent.user }}"
+    dest: "/home/{{ sansible_gocd_agent_user }}/.bashrc"
+    group: "{{ sansible_gocd_agent_user }}"
+    owner: "{{ sansible_gocd_agent_user }}"
     mode: 0644
 
 - name: Add config folder for agetns
   become: yes
-  become_user: "{{ gocd_agent.user }}"
+  become_user: "{{ sansible_gocd_agent_user }}"
   file:
-    name: "/home/{{ gocd_agent.user }}/work/go-agent-{{ item }}/config"
+    name: "/home/{{ sansible_gocd_agent_user }}/work/go-agent-{{ item }}/config"
     state: directory
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
-  when: gocd_agent.auto_register.key
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+  when: sansible_gocd_agent_auto_register_key
 
 - name: Configure auto registration
   become: yes
-  become_user: "{{ gocd_agent.user }}"
+  become_user: "{{ sansible_gocd_agent_user }}"
   template:
-    dest: "/home/{{ gocd_agent.user }}/work/go-agent-{{ item }}/config/autoregister.properties"
+    dest: "/home/{{ sansible_gocd_agent_user }}/work/go-agent-{{ item }}/config/autoregister.properties"
     src: autoregister.properties.j2
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
-  when: gocd_agent.auto_register.key
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+  when: sansible_gocd_agent_auto_register_key
   notify:
     - restart go-agent
 
 - name: Configure Git for Go CD user
   become: yes
-  become_user: "{{ gocd_agent.user }}"
+  become_user: "{{ sansible_gocd_agent_user }}"
   template:
-    dest: "/home/{{ gocd_agent.user }}/.gitconfig"
+    dest: "/home/{{ sansible_gocd_agent_user }}/.gitconfig"
     src: gitconfig.j2
 
 - name: Create defaults file for additional agents
@@ -111,11 +112,11 @@
   template:
     dest: /etc/default/go-agent-{{ item }}
     src: defaults.j2
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Ensure all the agents are started
   become: yes
   service:
     name: "go-agent-{{ item }}"
     state: started
-  with_sequence: count="{{ gocd_agent.no_of_agents }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
