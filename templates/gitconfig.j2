@@ -1,5 +1,5 @@
 [user]
-	name = {{ gocd_agent.git.user | default(gocd_agent.user) }}
-	email = {{ gocd_agent.git.email }}
+	name = {{ sansible_gocd_agent_git_user | default(sansible_gocd_agent_user) }}
+	email = {{ sansible_gocd_agent_git_email }}
 [url "git@github.com:"]
 	insteadOf = https://github.com/

@@ -1,4 +1,4 @@
-agent.auto.register.key={{ gocd_agent.auto_register.key }}
-agent.auto.register.resources={{ gocd_agent.auto_register.resources }}
-agent.auto.register.environments={{ gocd_agent.auto_register.environments }}
-agent.auto.register.hostname={{ gocd_agent.auto_register.hostname | default(ansible_hostname) }}
+agent.auto.register.key={{ sansible_gocd_agent_auto_register_key }}
+agent.auto.register.resources={{ sansible_gocd_agent_auto_register_resources }}
+agent.auto.register.environments={{ sansible_gocd_agent_auto_register_environments }}
+agent.auto.register.hostname={{ sansible_gocd_agent_auto_register_hostname | default(ansible_hostname) }}

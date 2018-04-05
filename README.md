@@ -6,7 +6,6 @@ Please see the Sansible readme for information on how to
 Master: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=master)](https://travis-ci.org/sansible/gocd_agent)  
 Develop: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=develop)](https://travis-ci.org/sansible/gocd_agent)
 
-* [ansible.cfg](#ansible-cfg)
 * [Installation and Dependencies](#installation-and-dependencies)
 * [Tags](#tags)
 * [Examples](#examples)
@@ -14,44 +13,28 @@ Develop: [![Build Status](https://travis-ci.org/sansible/gocd_agent.svg?branch=d
 This roles installs Go CD Agent, for GO CD Server installation please
 see the [Sansible GO CD Server Role](https://github.com/sansible/gocd_server)
 
-For more information about GO CD please visit [gocd.io/](http://www.gocd.io/).
-
-
-
-
-## ansible.cfg
-
-This role is designed to work with merge "hash_behaviour". Make sure your
-ansible.cfg contains these settings
-
-```INI
-[defaults]
-hash_behaviour = merge
-```
-
-
+For more information about GO CD please visit
+[https://www.gocd.org/](https://www.gocd.org/).
 
 
 ## Installation and Dependencies
 
 This role has a "java" dependency. You can let this role install Oracle
-Java 7, or install it yourself and set `gocd_agent.dependencies.skip_java`
-to `yes`.
+Java 8, or install it yourself and set
+`sansible_gocd_agent_dependencies_skip_java` to `yes`.
 
 AWS CLI tools are also installed by default, you can turn this feature off
-by setting `gocd_agent.aws.install_cli` to `no`.
+by setting `sansible_gocd_agent_aws_install_cli` to `no`.
 
 To install this role run `ansible-galaxy install sansible.gocd_agent`
 or add this to your `roles.yml`
 
 ```YAML
 - name: sansible.gocd_agent
-  version: v1.0
+  version: v2.0
 ```
 
 and run `ansible-galaxy install -p ./roles -r roles.yml`
-
-
 
 
 ## Tags
@@ -60,8 +43,6 @@ This role uses two tags: **build** and **configure**
 
 * `build` - Installs Go CD agent and all it's dependencies.
 * `configure` - Configure and ensures that the agents are running.
-
-
 
 
 ## Examples
@@ -83,8 +64,7 @@ To simply install GO CD agent:
 
   roles:
     - name: sansible.gocd_agent
-      gocd_agent:
-        server: IP.OR.URL.OF.THE.GOCD.SERVER
+      sansible_gocd_agent_server: IP.OR.URL.OF.THE.GOCD.SERVER
 ```
 
 Build GO CD agent for AWS ASG:
@@ -104,16 +84,14 @@ Build GO CD agent for AWS ASG:
 
   roles:
     - name: sansible.gocd_agent
-      gocd_agent:
-        gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
-        aws:
-          s3_secret_files:
-            - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa
-              local_path: "/home/go/.ssh"
-              mode: 0600
-            - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa.pub
-              local_path: "/home/go/.ssh"
-              mode: 0600
+      sansible_gocd_agent_aws_gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+      sansible_gocd_agent_aws_s3_secret_files:
+        - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa
+          local_path: "/home/go/.ssh"
+          mode: 0600
+        - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa.pub
+          local_path: "/home/go/.ssh"
+          mode: 0600
 ```
 
 Build Go CD agent with AWS profile configured
@@ -133,19 +111,17 @@ Build Go CD agent with AWS profile configured
 
   roles:
     - name: sansible.gocd_agent
-      gocd_agent:
-        gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
-        aws:
-          profiles:
-            - name: production_access
-              config:
-                role_arn: "arn:aws:iam::123456654321:role/ReleaseBot"
-                source_profile: default
-                s3:
-                  max_queue_size: 1000
+      sansible_gocd_agent_aws_gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+      sansible_gocd_agent_aws_profiles:
+        - name: production_access
+          config:
+            role_arn: "arn:aws:iam::123456654321:role/ReleaseBot"
+            source_profile: default
+            s3:
+              max_queue_size: 1000
 ```
 
-This will create the following ~/.aws/credentials
+This will create the following `~/.aws/credentials`.
 
 ```
 [production_access]
