@@ -21,13 +21,13 @@
 - name: Grab IP of GOCD Server
   command: "aws ec2 describe-instances --region eu-west-1 --filters {{ sansible_gocd_agent_aws_gocd_server_lookup_filter }} --output text --query 'Reservations[*].Instances[*].PrivateIpAddress'"
   register: gocd_server_ip
-  when: sansible_gocd_agent_aws_gocd_server_lookup_filter
+  when: sansible_gocd_agent_aws_gocd_server_lookup_filter is not none
 
 - name: Set IP of GOCD server
   set_fact:
     gocd_agent:
       server: "{{ gocd_server_ip.stdout }}"
-  when: sansible_gocd_agent_aws_gocd_server_lookup_filter
+  when: sansible_gocd_agent_aws_gocd_server_lookup_filter is not none
 
 - name: Copy secrets from S3
   become: yes
@@ -53,14 +53,14 @@
     path: "/home/{{ sansible_gocd_agent_user }}/.aws"
     owner: "{{ sansible_gocd_agent_user }}"
     group: "{{ sansible_gocd_agent_user }}"
-  when: sansible_gocd_agent_aws_profiles
+  when: sansible_gocd_agent_aws_profiles is not none
 
 - name: Configure AWS credentials
   become: yes
   template:
     dest: "/home/{{ sansible_gocd_agent_user }}/.aws/credentials"
     src: aws/credentials.j2
-  when: sansible_gocd_agent_aws_profiles
+  when: sansible_gocd_agent_aws_profiles is not none
 
 - name: Configure SSH
   become: yes
@@ -87,7 +87,7 @@
     name: "/home/{{ sansible_gocd_agent_user }}/work/go-agent-{{ item }}/config"
     state: directory
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-  when: sansible_gocd_agent_auto_register_key
+  when: sansible_gocd_agent_auto_register_key is not none
 
 - name: Configure auto registration
   become: yes
@@ -96,7 +96,7 @@
     dest: "/home/{{ sansible_gocd_agent_user }}/work/go-agent-{{ item }}/config/autoregister.properties"
     src: autoregister.properties.j2
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-  when: sansible_gocd_agent_auto_register_key
+  when: sansible_gocd_agent_auto_register_key is not none
   notify:
     - restart go-agent
 
