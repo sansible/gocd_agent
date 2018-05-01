@@ -20,14 +20,14 @@
     - python-pip
     - python-setuptools
 
-- name: Install AWS CLI
+- name: Install AWS CLI, boto
   become: yes
   pip:
     name: "{{ item }}"
-  when: sansible_gocd_agent_aws_install_cli
   with_items:
     - awscli
     - boto
+  when: sansible_gocd_agent_aws_install_cli == True
 
 - name: Add GoCD Apt key
   become: yes
