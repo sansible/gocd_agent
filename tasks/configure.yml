@@ -25,7 +25,7 @@
 
 - name: Set IP of GOCD server
   set_fact:
-    sansible_gocd_agent_gocd_server: "{{ gocd_server_ip.stdout }}"
+    sansible_gocd_agent_server: "{{ gocd_server_ip.stdout }}"
   when: sansible_gocd_agent_aws_gocd_server_lookup_filter is not none
 
 - name: Copy secrets from S3
