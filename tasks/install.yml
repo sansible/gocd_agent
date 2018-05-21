@@ -12,13 +12,8 @@
   become: yes
   apt:
     name: "{{ item }}"
-  with_items:
-    - build-essential
-    - git
-    - python-dev
-    - python-netaddr
-    - python-pip
-    - python-setuptools
+    update_cache: yes
+  with_items: "{{ sansible_gocd_agent_packages }}"
 
 - name: Install AWS CLI, boto
   become: yes
