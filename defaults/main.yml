@@ -15,6 +15,15 @@ sansible_gocd_agent_aws_install_cli: yes
 #     source_profile: default
 sansible_gocd_agent_aws_profiles: []
 sansible_gocd_agent_aws_region: eu-west-1
+sansible_gocd_agent_packages:
+  - apt-transport-https
+  - build-essential
+  - git
+  - python-dev
+  - python-netaddr
+  - python-pip
+  - python-setuptools
+
 # List of files that need to be copied and secured from S3.
 # These should be things like SSH keys, vault passes etc., e.g.
 # sansible_gocd_server_aws_s3_secret_files:
