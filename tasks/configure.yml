@@ -52,14 +52,14 @@
     path: "/home/{{ sansible_gocd_agent_user }}/.aws"
     owner: "{{ sansible_gocd_agent_user }}"
     group: "{{ sansible_gocd_agent_user }}"
-  when: sansible_gocd_agent_aws_profiles is not none
+  when: sansible_gocd_agent_aws_profiles | length > 0
 
 - name: Configure AWS credentials
   become: yes
   template:
     dest: "/home/{{ sansible_gocd_agent_user }}/.aws/credentials"
     src: aws/credentials.j2
-  when: sansible_gocd_agent_aws_profiles is not none
+  when: sansible_gocd_agent_aws_profiles | length > 0
 
 - name: Configure SSH
   become: yes
