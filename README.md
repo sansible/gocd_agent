@@ -87,10 +87,10 @@ Build GO CD agent for AWS ASG:
       sansible_gocd_agent_aws_gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
       sansible_gocd_agent_aws_s3_secret_files:
         - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa
-          local_path: "/home/go/.ssh"
+          local_path: /home/go/.ssh
           mode: 0600
         - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa.pub
-          local_path: "/home/go/.ssh"
+          local_path: /home/go/.ssh
           mode: 0600
 ```
 
@@ -111,7 +111,7 @@ Build Go CD agent with AWS profile configured
 
   roles:
     - name: sansible.gocd_agent
-      sansible_gocd_agent_aws_gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+      sansible_gocd_agent_aws_gocd_server_lookup_filter: "Name=tag:environment,Values=prd Name=tag:role,Values=gocd_server"
       sansible_gocd_agent_aws_profiles:
         - name: production_access
           config:
