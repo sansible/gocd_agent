@@ -1,5 +1,4 @@
 import os
-
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
@@ -21,8 +20,7 @@ def test_installed_packages(host):
 
 def test_files(host):
     directories = [
-        '/home/go/.aws/',
-        '/var/log/go-agent-1/', '/var/log/go-agent-2/',
+        '/home/go/.aws/', '/var/log/go-agent-1/', '/var/log/go-agent-2/',
     ]
     for directory in directories:
         assert host.file(directory).is_directory

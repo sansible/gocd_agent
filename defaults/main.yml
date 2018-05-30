@@ -5,7 +5,7 @@ sansible_gocd_agent_auto_register_hostname: ~
 sansible_gocd_agent_auto_register_key: ~
 sansible_gocd_agent_auto_register_resources: ~
 # if you want to lookup your gocd server automatically,
-# e.g. Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+# e.g. Name=tag:environment,Values=prd Name=tag:role,Values=gocd_server
 sansible_gocd_agent_aws_gocd_server_lookup_filter: ~
 sansible_gocd_agent_aws_install_cli: yes
 # List of profiles to configure in ~/.aws/credentials
@@ -46,7 +46,7 @@ sansible_gocd_agent_port: 8153
 sansible_gocd_agent_repo_key_id: 8816C449
 sansible_gocd_agent_repo_source: deb https://download.gocd.org /
 sansible_gocd_agent_server: localhost
-sansible_gocd_agent_start_opts: ""
+sansible_gocd_agent_start_opts: ~
 sansible_gocd_agent_user: go
 sansible_gocd_agent_user_dir: /home/go
 sansible_gocd_agent_version: 16.*

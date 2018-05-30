@@ -1,39 +1,46 @@
 ---
 
-- name: Ensure hostname is resolvable
+- name: Ensure Hostname is Resolvable
   become: yes
   lineinfile:
     dest: /etc/hosts
     line: "127.0.0.1 localhost {{ ansible_hostname }}"
     regexp: ^127\.0\.0\.1
-  when: ansible_virtualization_type != 'docker'
+  when: ansible_virtualization_type != "docker"
 
-- name: Ensures go-agent configuration
+- name: Ensures go-agent Configuration
   become: yes
   template:
     dest: /etc/default/go-agent
     group: "{{ sansible_gocd_agent_user }}"
     owner: "{{ sansible_gocd_agent_user }}"
     src: defaults.j2
-  notify:
-    - restart go-agent
+  notify: restart go-agent
 
-- name: Grab IP of GOCD Server
-  command: "aws ec2 describe-instances --region eu-west-1 --filters {{ sansible_gocd_agent_aws_gocd_server_lookup_filter }} --output text --query 'Reservations[*].Instances[*].PrivateIpAddress'"
-  register: gocd_server_ip
+- name: Query AWS for GoCD Server
+  ec2_remote_facts:
+    filters: >-
+      {%- for filter in sansible_gocd_agent_aws_gocd_server_lookup_filter.split(' ') -%}
+        {{ filter | regex_replace('^Name=', '') | regex_replace(',Values', '') }},
+      {%- endfor -%}
+  register: gocd_server_lookup
   when: sansible_gocd_agent_aws_gocd_server_lookup_filter is not none
 
-- name: Set IP of GOCD server
+- name: Set IP of GoCD server
   set_fact:
-    sansible_gocd_agent_server: "{{ gocd_server_ip.stdout }}"
-  when: sansible_gocd_agent_aws_gocd_server_lookup_filter is not none
+    sansible_gocd_agent_server: "{{ gocd_server_lookup.instances[0].private_ip_address }}"
+  when:
+    - gocd_server_lookup is defined
+    - gocd_server_lookup.instances | default([]) != []
 
 - name: Copy secrets from S3
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
-  command: "aws s3 cp --region {{ sansible_gocd_agent_aws_region }} {{ item.s3_path }} {{ item.local_path }}"
-  args:
-    creates: "{{ item.local_path }}"
+  s3:
+    bucket: "{{ item.s3_path | regex_replace('^s3://', '') | regex_replace('/.*$', '') }}"
+    object: "{{ item.s3_path | regex_replace('^s3://[a-zA-Z0-9-]+', '') }}"
+    dest: "{{ item.local_path }}"
+    mode: get
   with_items: "{{ sansible_gocd_agent_aws_s3_secret_files }}"
 
 - name: Secure secrets from S3
@@ -52,14 +59,14 @@
     path: "/home/{{ sansible_gocd_agent_user }}/.aws"
     owner: "{{ sansible_gocd_agent_user }}"
     group: "{{ sansible_gocd_agent_user }}"
-  when: sansible_gocd_agent_aws_profiles is not none
+  when: sansible_gocd_agent_aws_profiles != []
 
 - name: Configure AWS credentials
   become: yes
   template:
     dest: "/home/{{ sansible_gocd_agent_user }}/.aws/credentials"
     src: aws/credentials.j2
-  when: sansible_gocd_agent_aws_profiles is not none
+  when: sansible_gocd_agent_aws_profiles != []
 
 - name: Configure SSH
   become: yes
@@ -79,7 +86,7 @@
     owner: "{{ sansible_gocd_agent_user }}"
     mode: 0644
 
-- name: Add config folder for agetns
+- name: Add config folder for agents
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
   file:
@@ -96,8 +103,7 @@
     src: autoregister.properties.j2
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
   when: sansible_gocd_agent_auto_register_key is not none
-  notify:
-    - restart go-agent
+  notify: restart go-agent
 
 - name: Configure Git for Go CD user
   become: yes
@@ -109,7 +115,7 @@
 - name: Create defaults file for additional agents
   become: yes
   template:
-    dest: /etc/default/go-agent-{{ item }}
+    dest: "/etc/default/go-agent-{{ item }}"
     src: defaults.j2
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
