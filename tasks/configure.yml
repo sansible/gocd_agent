@@ -37,8 +37,8 @@
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
   s3:
-    bucket: "{{ item.s3_path | regex_replace('^s3://', '') | regex_replace('/.*$', '') }}"
-    object: "{{ item.s3_path | regex_replace('^s3://[a-zA-Z0-9-]+', '') }}"
+    bucket: "{{ item.s3_path | regex_replace('^s3://([^/]+)/.*', '\\1') }}"
+    object: "{{ item.s3_path | regex_replace('^s3://[^/]+(/.*)', '\\1') }}"
     dest: "{{ item.local_path }}"
     mode: get
   with_items: "{{ sansible_gocd_agent_aws_s3_secret_files }}"
