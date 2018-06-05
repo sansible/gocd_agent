@@ -8,6 +8,64 @@
     regexp: ^127\.0\.0\.1
   when: ansible_virtualization_type != "docker"
 
+- name: Copy go-agent startup script for additional agents
+  become: yes
+  copy:
+    src: /etc/init.d/go-agent
+    dest: "/etc/init.d/go-agent-{{ item }}"
+    force: no
+    remote_src: yes
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Ensure startup scripts for additional agents have their own provider name
+  become: yes
+  lineinfile:
+    backrefs: yes
+    dest: "/etc/init.d/go-agent-{{ item }}"
+    line: "# Provides: go-agent-{{ item }}"
+    regexp: "^# Provides: go-agent$"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Ensure perms on startup scripts for additional agents
+  become: yes
+  file:
+    mode: 0754
+    path: "/etc/init.d/go-agent-{{ item }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Ensure startup scripts for additional agents are enabled
+  become: yes
+  service:
+    enabled: yes
+    name: "go-agent-{{ item }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Create soft links to /usr for additional agents
+  become: yes
+  file:
+    state: link
+    src: /usr/share/go-agent
+    dest: "/usr/share/go-agent-{{ item }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Create working directories for additional agents
+  become: yes
+  file:
+    state: directory
+    path: "{{ sansible_gocd_agent_user_dir }}/work/go-agent-{{ item }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_user }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Create log directories for additional agents
+  become: yes
+  file:
+    state: directory
+    path: "/var/log/go-agent-{{ item }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_user }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
 - name: Ensures go-agent Configuration
   become: yes
   template:
@@ -19,12 +77,9 @@
 
 - name: Query AWS for GoCD Server
   ec2_remote_facts:
-    filters: >-
-      {%- for filter in sansible_gocd_agent_aws_gocd_server_lookup_filter.split(' ') -%}
-        {{ filter | regex_replace('^Name=', '') | regex_replace(',Values', '') }},
-      {%- endfor -%}
+    filters: "{{ sansible_gocd_agent_aws_gocd_server_lookup_filters }}"
   register: gocd_server_lookup
-  when: sansible_gocd_agent_aws_gocd_server_lookup_filter is not none
+  when: sansible_gocd_agent_aws_gocd_server_lookup_filters != {}
 
 - name: Set IP of GoCD server
   set_fact:

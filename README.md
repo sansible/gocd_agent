@@ -31,7 +31,7 @@ or add this to your `roles.yml`
 
 ```YAML
 - name: sansible.gocd_agent
-  version: v2.0
+  version: v3.0
 ```
 
 and run `ansible-galaxy install -p ./roles -r roles.yml`
@@ -84,7 +84,10 @@ Build GO CD agent for AWS ASG:
 
   roles:
     - name: sansible.gocd_agent
-      sansible_gocd_agent_aws_gocd_server_lookup_filter: Name=tag:Environment,Values=prd Name=tag:Role,Values=gocd_server
+      sansible_gocd_agent_aws_gocd_server_lookup_filters:
+        "tag:environment": prd
+        "tag:role": gocd_server
+        vpc-id: vpc-123456
       sansible_gocd_agent_aws_s3_secret_files:
         - s3_path: s3://config.my.org.domain/gocd_agent/prd/ssh/id_rsa
           local_path: /home/go/.ssh
@@ -111,7 +114,10 @@ Build Go CD agent with AWS profile configured
 
   roles:
     - name: sansible.gocd_agent
-      sansible_gocd_agent_aws_gocd_server_lookup_filter: "Name=tag:environment,Values=prd Name=tag:role,Values=gocd_server"
+      sansible_gocd_agent_aws_gocd_server_lookup_filters:
+        "tag:environment": prd
+        "tag:role": gocd_server
+        vpc-id: vpc-123456
       sansible_gocd_agent_aws_profiles:
         - name: production_access
           config:
