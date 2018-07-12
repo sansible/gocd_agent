@@ -83,7 +83,7 @@
 
 - name: Set IP of GoCD server
   set_fact:
-    sansible_gocd_agent_server: "{{ gocd_server_lookup.instances[0].private_ip_address }}"
+    sansible_gocd_agent_server_url: "{{ gocd_server_lookup.instances[0].private_ip_address }}"
   when:
     - gocd_server_lookup is defined
     - gocd_server_lookup.instances | default([]) != []

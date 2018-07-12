@@ -64,7 +64,7 @@ To simply install GO CD agent:
 
   roles:
     - name: sansible.gocd_agent
-      sansible_gocd_agent_server: IP.OR.URL.OF.THE.GOCD.SERVER
+      sansible_gocd_agent_server_url: https://127.0.0.1:8154/go (Change the IP address 127.0.0.1 to the hostname or IP address of your GoCD server.)
 ```
 
 Build GO CD agent for AWS ASG:

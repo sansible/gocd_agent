@@ -1,6 +1,5 @@
 # {{ ansible_managed }}
-export GO_SERVER={{ sansible_gocd_agent_server }}
-export GO_SERVER_PORT={{ sansible_gocd_agent_port }}
+export GO_SERVER_URL={{ sansible_gocd_agent_server_url }}
 {% if sansible_gocd_agent_start_opts is not none %}
 export GO_AGENT_SYSTEM_PROPERTIES="{{ sansible_gocd_agent_start_opts }}"
 {% endif %}
