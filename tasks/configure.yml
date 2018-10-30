@@ -17,6 +17,14 @@
     remote_src: yes
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
+- name: Create go-agent startup links for additional agents
+  become: yes
+  command: "update-rc.d go-agent-{{ item }} defaults"
+  args:
+    creates: "/etc/rc0.d/K??go-agent-{{ item }}"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+  when: ansible_distribution_release == "bionic"
+
 - name: Ensure startup scripts for additional agents have their own provider name
   become: yes
   lineinfile:
@@ -91,7 +99,7 @@
 - name: Copy secrets from S3
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
-  s3:
+  aws_s3:
     bucket: "{{ item.s3_path | regex_replace('^s3://([^/]+)/.*', '\\1') }}"
     object: "{{ item.s3_path | regex_replace('^s3://[^/]+(/.*)', '\\1') }}"
     dest: "{{ item.local_path }}"
