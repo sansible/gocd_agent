@@ -86,12 +86,13 @@
 - name: Query AWS for GoCD Server
   ec2_remote_facts:
     filters: "{{ sansible_gocd_agent_aws_gocd_server_lookup_filters }}"
+    region: "{{ sansible_gocd_agent_aws_region }}"
   register: gocd_server_lookup
   when: sansible_gocd_agent_aws_gocd_server_lookup_filters != {}
 
 - name: Set IP of GoCD server
   set_fact:
-    sansible_gocd_agent_server: "{{ gocd_server_lookup.instances[0].private_ip_address }}"
+    sansible_gocd_agent_server_url: "https://{{ gocd_server_lookup.instances[0].private_ip_address }}:{{ sansible_gocd_agent_port_https }}/go"
   when:
     - gocd_server_lookup is defined
     - gocd_server_lookup.instances | default([]) != []
