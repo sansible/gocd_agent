@@ -31,7 +31,7 @@ or add this to your `roles.yml`
 
 ```YAML
 - name: sansible.gocd_agent
-  version: v3.0
+  version: v3.1
 ```
 
 and run `ansible-galaxy install -p ./roles -r roles.yml`
@@ -64,7 +64,7 @@ To simply install GO CD agent:
 
   roles:
     - name: sansible.gocd_agent
-      sansible_gocd_agent_server: IP.OR.URL.OF.THE.GOCD.SERVER
+      sansible_gocd_agent_server_url: https://127.0.0.1:8154/go
 ```
 
 Build GO CD agent for AWS ASG:
