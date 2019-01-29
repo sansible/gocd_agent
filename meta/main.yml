@@ -3,7 +3,7 @@
 galaxy_info:
   description: "Install the Go Continuous Delivery agent."
   license: MIT
-  min_ansible_version: 2.2
+  min_ansible_version: 2.5
   platforms:
     - name: Ubuntu
       versions:
