@@ -7,9 +7,19 @@ platforms:
   - name: sansible_gocd_agent-trusty
     image: ubuntu:trusty
   - name: sansible_gocd_agent-xenial
-    image: ubuntu:xenial
+    image: solita/ubuntu-systemd:xenial
+    command: /sbin/init
+    capabilities:
+      - SYS_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
   - name: sansible_gocd_agent-bionic
-    image: ubuntu:bionic
+    image: solita/ubuntu-systemd:bionic
+    command: /sbin/init
+    capabilities:
+      - SYS_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
 provisioner:
   name: ansible
@@ -30,7 +40,6 @@ lint:
 dependency:
   name: galaxy
   options:
-    ignore-certs: True
     role-file: requirements.yml
 
 scenario:
