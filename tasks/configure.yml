@@ -6,7 +6,9 @@
     dest: /etc/hosts
     line: "127.0.0.1 localhost {{ ansible_hostname }}"
     regexp: ^127\.0\.0\.1
-  when: ansible_virtualization_type != "docker"
+  when:
+    - sansible_gocd_agent_fix_hostname | bool
+    - ansible_virtualization_type != "docker"
 
 - name: Copy go-agent startup script for additional agents
   become: yes
@@ -41,11 +43,26 @@
     path: "/etc/init.d/go-agent-{{ item }}"
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
-- name: Ensure startup scripts for additional agents are enabled
+- name: Ensure startup scripts are registed for SystemD
+  become: yes
+  systemd:
+    daemon_reload: yes
+  when: ansible_service_mgr == "systemd"
+
+- name: Ensure startup scripts for additional agents are enabled for SysV
   become: yes
   service:
     enabled: yes
     name: "go-agent-{{ item }}"
+  when: ansible_service_mgr != "systemd"
+  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+
+- name: Ensure startup scripts are enabled for SystemD
+  become: yes
+  systemd:
+    enabled: yes
+    name: "go-agent-{{ item }}"
+  when: ansible_service_mgr == "systemd"
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
 
 - name: Create soft links to /usr for additional agents
@@ -84,7 +101,7 @@
   notify: restart go-agent
 
 - name: Query AWS for GoCD Server
-  ec2_remote_facts:
+  ec2_instance_facts:
     filters: "{{ sansible_gocd_agent_aws_gocd_server_lookup_filters }}"
     region: "{{ sansible_gocd_agent_aws_region }}"
   register: gocd_server_lookup
