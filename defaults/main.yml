@@ -50,7 +50,7 @@ sansible_gocd_agent_port: 8153
 sansible_gocd_agent_port_https: 8154
 sansible_gocd_agent_repo_key_id: 8816C449
 sansible_gocd_agent_repo_source: deb https://download.gocd.org /
-sansible_gocd_agent_repo_keyserver: keyserver.ubuntu.com
+sansible_gocd_agent_repo_keyserver: http://eu.pool.sks-keyservers.net
 sansible_gocd_agent_server: localhost
 sansible_gocd_agent_server_url: https://127.0.0.1:8154/go
 sansible_gocd_agent_start_on_boot: yes
