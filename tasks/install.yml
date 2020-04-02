@@ -21,7 +21,7 @@
     name:
       - awscli
       - boto
-  when: sansible_gocd_agent_aws_install_cli == true
+  when: sansible_gocd_agent_aws_install_cli
 
 - name: Download GoCD PGP key (works with Bionic behind a proxy)
   become: yes
