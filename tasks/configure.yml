@@ -206,4 +206,4 @@
     name: "go-agent-{{ item }}"
     state: started
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-  when: sansible_gocd_agent_start_on_boot == true
+  when: sansible_gocd_agent_start_on_boot

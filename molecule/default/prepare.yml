@@ -5,17 +5,16 @@
   gather_facts: no
 
   tasks:
-    - name: Install Python for Ansible
+    - name: Install Python 3 for Ansible
       become: yes
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal python-zipstream)
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal python3-zipstream)
       changed_when: no
 
     - name: Install apt-transport-https, lsb-release, net-tools
       become: yes
       apt:
-        name: "{{ item }}"
+        name:
+          - apt-transport-https
+          - lsb-release
+          - net-tools
         update_cache: yes
-      with_items:
-        - apt-transport-https
-        - lsb-release
-        - net-tools

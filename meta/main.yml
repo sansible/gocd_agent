@@ -24,4 +24,4 @@ dependencies:
 
   - role: sansible.java
     sansible_java_version: "{{ sansible_gocd_agent_java_version }}"
-    when: sansible_gocd_agent_dependencies_skip_java == false
+    when: sansible_gocd_agent_dependencies_skip_java
