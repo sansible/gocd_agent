@@ -77,7 +77,7 @@
   become: yes
   file:
     state: directory
-    path: "{{ sansible_gocd_agent_user_dir }}/work/go-agent-{{ item }}"
+    path: "{{ sansible_gocd_agent_work_dir }}/go-agent-{{ item }}"
     owner: "{{ sansible_gocd_agent_user }}"
     group: "{{ sansible_gocd_agent_user }}"
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
@@ -171,7 +171,7 @@
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
   file:
-    name: "/home/{{ sansible_gocd_agent_user }}/work/go-agent-{{ item }}/config"
+    name: "{{ sansible_gocd_agent_work_dir }}/go-agent-{{ item }}/config"
     state: directory
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
   when: sansible_gocd_agent_auto_register_key is not none
@@ -180,7 +180,7 @@
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
   template:
-    dest: "/home/{{ sansible_gocd_agent_user }}/work/go-agent-{{ item }}/config/autoregister.properties"
+    dest: "{{ sansible_gocd_agent_work_dir }}/go-agent-{{ item }}/config/autoregister.properties"
     src: autoregister.properties.j2
   with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
   when: sansible_gocd_agent_auto_register_key is not none

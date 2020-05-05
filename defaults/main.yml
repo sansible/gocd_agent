@@ -58,3 +58,4 @@ sansible_gocd_agent_start_opts: ~
 sansible_gocd_agent_user: go
 sansible_gocd_agent_user_dir: /home/go
 sansible_gocd_agent_version: 16.*
+sansible_gocd_agent_work_dir: "{{ sansible_gocd_agent_user_dir }}/work/"
