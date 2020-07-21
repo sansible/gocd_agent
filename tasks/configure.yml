@@ -10,96 +10,6 @@
     - sansible_gocd_agent_fix_hostname | bool
     - ansible_virtualization_type != "docker"
 
-- name: Copy go-agent startup script for additional agents
-  become: yes
-  copy:
-    src: /etc/init.d/go-agent
-    dest: "/etc/init.d/go-agent-{{ item }}"
-    force: no
-    remote_src: yes
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Create go-agent startup links for additional agents
-  become: yes
-  command: "update-rc.d go-agent-{{ item }} defaults"
-  args:
-    creates: "/etc/rc0.d/K??go-agent-{{ item }}"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-  when: ansible_distribution_release == "bionic"
-
-- name: Ensure startup scripts for additional agents have their own provider name
-  become: yes
-  lineinfile:
-    backrefs: yes
-    dest: "/etc/init.d/go-agent-{{ item }}"
-    line: "# Provides: go-agent-{{ item }}"
-    regexp: "^# Provides: go-agent$"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Ensure perms on startup scripts for additional agents
-  become: yes
-  file:
-    mode: 0754
-    path: "/etc/init.d/go-agent-{{ item }}"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Ensure startup scripts are registed for SystemD
-  become: yes
-  systemd:
-    daemon_reload: yes
-  when: ansible_service_mgr == "systemd"
-
-- name: Ensure startup scripts for additional agents are enabled for SysV
-  become: yes
-  service:
-    enabled: yes
-    name: "go-agent-{{ item }}"
-  when: ansible_service_mgr != "systemd"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Ensure startup scripts are enabled for SystemD
-  become: yes
-  systemd:
-    enabled: yes
-    name: "go-agent-{{ item }}"
-  when: ansible_service_mgr == "systemd"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Create soft links to /usr for additional agents
-  become: yes
-  file:
-    state: link
-    src: /usr/share/go-agent
-    dest: "/usr/share/go-agent-{{ item }}"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Create working directories for additional agents
-  become: yes
-  file:
-    state: directory
-    path: "{{ sansible_gocd_agent_work_dir }}/go-agent-{{ item }}"
-    owner: "{{ sansible_gocd_agent_user }}"
-    group: "{{ sansible_gocd_agent_user }}"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Create log directories for additional agents
-  become: yes
-  file:
-    state: directory
-    path: "/var/log/go-agent-{{ item }}"
-    owner: "{{ sansible_gocd_agent_user }}"
-    group: "{{ sansible_gocd_agent_user }}"
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
-- name: Ensures go-agent Configuration
-  become: yes
-  template:
-    dest: /etc/default/go-agent
-    group: "{{ sansible_gocd_agent_user }}"
-    owner: "{{ sansible_gocd_agent_user }}"
-    src: defaults.j2
-  notify: restart go-agent
-
 - name: Query AWS for GoCD Server
   ec2_instance_facts:
     filters: "{{ sansible_gocd_agent_aws_gocd_server_lookup_filters }}"
@@ -114,6 +24,159 @@
     - gocd_server_lookup is defined
     - gocd_server_lookup.instances | default([]) != []
 
+- name: Create the directories for agent data and binaries for additional agents
+  become: yes
+  file:
+    group: "{{ sansible_gocd_agent_group }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    path: "{{ item.1 | replace('[GO-AGENT]', 'go-' + item.0 | string) }}"
+    state: directory
+  loop: "{{
+    range(1, sansible_gocd_agent_no_of_agents + 1) |
+    product([
+      sansible_gocd_agent_work_dir + '/[GO-AGENT]',
+      '/var/log/[GO-AGENT]',
+      sansible_gocd_agent_work_dir + '/[GO-AGENT]/run'
+    ]) |
+    list
+  }}"
+
+- name: Copy over all config, shell scripts and wrapper configs for additional agents
+  become: yes
+  copy:
+    dest: "{{ sansible_gocd_agent_work_dir }}/go-{{ item.0 }}"
+    force: no
+    group: "{{ sansible_gocd_agent_group }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    remote_src: yes
+    src: "/usr/share/go-agent/{{ item.1 }}"
+  loop: "{{
+    range(1, sansible_gocd_agent_no_of_agents + 1) |
+    product([
+      'bin',
+      'wrapper-config',
+    ]) |
+    list
+  }}"
+
+- name: Tweak wrapper.conf location in bin script for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/bin/go-agent"
+    replace: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper.conf"
+    regexp: /usr/share/go-agent/wrapper-config/wrapper.conf
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Tweak /run location in bin script for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/bin/go-agent"
+    replace: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/run"
+    regexp: /var/lib/go-agent/run
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Tweak naming in bin script for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/bin/go-agent"
+    replace: "go-{{ item }}"
+    regexp: "go-agent"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Tweak naming in wrapper config for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper.conf"
+    replace: "=go-{{ item }}"
+    regexp: "=go-agent"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Tweak /var/lib location in wrapper config for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper.conf"
+    replace: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}"
+    regexp: "/var/lib/go-agent"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Tweak /var/log location in wrapper config for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper.conf"
+    replace: "/var/log/go-{{ item }}"
+    regexp: "/var/log/go-agent"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Tweak wrapper config properties for additional agents
+  become: yes
+  replace:
+    path: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper.conf"
+    replace: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper-properties.conf"
+    regexp: "\\.\\.\\/wrapper-config\\/wrapper-properties\\.conf"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Ensures wrapper configuration for additional agents
+  become: yes
+  template:
+    dest: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper-config/wrapper-properties.conf"
+    group: "{{ sansible_gocd_agent_group }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    src: wrapper-properties.conf.j2
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Symlink the wrapper binaries for additional agents
+  become: yes
+  become_user: "{{ sansible_gocd_agent_user }}"
+  file:
+    dest: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/wrapper"
+    src: /usr/share/go-agent/wrapper
+    state: link
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Add config folder for agents
+  become: yes
+  file:
+    group: "{{ sansible_gocd_agent_group }}"
+    name: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/config"
+    owner: "{{ sansible_gocd_agent_user }}"
+    state: directory
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+  when: sansible_gocd_agent_auto_register_key is not none
+
+- name: Configure auto registration
+  become: yes
+  template:
+    dest: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/config/autoregister.properties"
+    group: "{{ sansible_gocd_agent_group }}"
+    owner: "{{ sansible_gocd_agent_user }}"
+    src: autoregister.properties.j2
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+  when: sansible_gocd_agent_auto_register_key is not none
+  notify: restart go-agent
+
+- name: Run install command for additional agents
+  become: yes
+  command: "{{ sansible_gocd_agent_work_dir }}/go-{{ item }}/bin/go-agent install"
+  args:
+    creates: "/etc/systemd/system/go-{{ item }}.service"
+  register: sansible_gocd_agent_install_cmd_result
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
+- name: Ensure startup scripts are registered for SystemD
+  become: yes
+  systemd:
+    daemon_reload: yes
+  when: sansible_gocd_agent_install_cmd_result.changed
+  tags:
+    - skip_ansible_lint
+
+- name: Ensure startup scripts are enabled for SystemD
+  become: yes
+  systemd:
+    enabled: yes
+    name: "go-{{ item }}"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+
 - name: Copy secrets from S3
   become: yes
   become_user: "{{ sansible_gocd_agent_user }}"
@@ -127,7 +190,7 @@
 - name: Secure secrets from S3
   become: yes
   file:
-    group: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_group }}"
     mode: "{{ item.mode | default(0600) }}"
     owner: "{{ sansible_gocd_agent_user }}"
     path: "{{ item.local_path }}"
@@ -139,7 +202,7 @@
     state: directory
     path: "/home/{{ sansible_gocd_agent_user }}/.aws"
     owner: "{{ sansible_gocd_agent_user }}"
-    group: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_group }}"
   when: sansible_gocd_agent_aws_profiles != []
 
 - name: Configure AWS credentials
@@ -154,7 +217,7 @@
   copy:
     src: ssh_config
     dest: "/home/{{ sansible_gocd_agent_user }}/.ssh/config"
-    group: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_group }}"
     owner: "{{ sansible_gocd_agent_user }}"
     mode: 0600
 
@@ -163,28 +226,9 @@
   template:
     src: .bashrc.j2
     dest: "/home/{{ sansible_gocd_agent_user }}/.bashrc"
-    group: "{{ sansible_gocd_agent_user }}"
+    group: "{{ sansible_gocd_agent_group }}"
     owner: "{{ sansible_gocd_agent_user }}"
     mode: 0644
-
-- name: Add config folder for agents
-  become: yes
-  become_user: "{{ sansible_gocd_agent_user }}"
-  file:
-    name: "{{ sansible_gocd_agent_work_dir }}/go-agent-{{ item }}/config"
-    state: directory
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-  when: sansible_gocd_agent_auto_register_key is not none
-
-- name: Configure auto registration
-  become: yes
-  become_user: "{{ sansible_gocd_agent_user }}"
-  template:
-    dest: "{{ sansible_gocd_agent_work_dir }}/go-agent-{{ item }}/config/autoregister.properties"
-    src: autoregister.properties.j2
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-  when: sansible_gocd_agent_auto_register_key is not none
-  notify: restart go-agent
 
 - name: Configure Git for Go CD user
   become: yes
@@ -193,17 +237,10 @@
     dest: "/home/{{ sansible_gocd_agent_user }}/.gitconfig"
     src: gitconfig.j2
 
-- name: Create defaults file for additional agents
-  become: yes
-  template:
-    dest: "/etc/default/go-agent-{{ item }}"
-    src: defaults.j2
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
-
 - name: Ensure all the agents are started
   become: yes
   service:
-    name: "go-agent-{{ item }}"
+    name: "go-{{ item }}"
     state: started
-  with_sequence: count="{{ sansible_gocd_agent_no_of_agents }}"
+  loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
   when: sansible_gocd_agent_start_on_boot
