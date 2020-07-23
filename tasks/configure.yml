@@ -123,6 +123,7 @@
     owner: "{{ sansible_gocd_agent_user }}"
     src: wrapper-properties.conf.j2
   loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+  notify: restart go agents
 
 - name: Symlink the wrapper binaries for additional agents
   become: yes
@@ -152,7 +153,7 @@
     src: autoregister.properties.j2
   loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
   when: sansible_gocd_agent_auto_register_key is not none
-  notify: restart go-agent
+  notify: restart go agents
 
 - name: Run install command for additional agents
   become: yes
