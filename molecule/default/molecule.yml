@@ -4,17 +4,15 @@ driver:
   name: docker
 
 platforms:
-  - name: sansible_gocd_agent-trusty
-    image: ubuntu:trusty
-  - name: sansible_gocd_agent-xenial
-    image: solita/ubuntu-systemd:xenial
+  - name: sansible_gocd_agent_xenial
+    image: jrei/systemd-ubuntu:16.04
     command: /sbin/init
     capabilities:
       - SYS_ADMIN
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: sansible_gocd_agent-bionic
-    image: solita/ubuntu-systemd:bionic
+  - name: sansible_gocd_agent_bionic
+    image: jrei/systemd-ubuntu:18.04
     command: /sbin/init
     capabilities:
       - SYS_ADMIN
@@ -23,19 +21,12 @@ platforms:
 
 provisioner:
   name: ansible
-  lint:
-    name: ansible-lint
 
-lint:
-  name: yamllint
-  options:
-    config-data:
-      extends: default
-      ignore: .venv_ansible*
-      rules:
-        line-length:
-          max: 179
-        truthy: disable
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+  flake8 molecule/
 
 dependency:
   name: galaxy
@@ -47,5 +38,3 @@ scenario:
 
 verifier:
   name: testinfra
-  lint:
-    name: flake8

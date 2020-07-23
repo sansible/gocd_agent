@@ -54,14 +54,6 @@
     state: present
     force: yes
 
-- name: Ensure that the default agent is stopped and disabled for SysV
-  become: yes
-  service:
-    enabled: no
-    name: go-agent
-    state: stopped
-  when: ansible_service_mgr != "systemd"
-
 - name: Ensure that the default agent is stopped and disabled for SystemD
   become: yes
   systemd:
@@ -69,4 +61,3 @@
     enabled: no
     name: go-agent
     state: stopped
-  when: ansible_service_mgr == "systemd"
