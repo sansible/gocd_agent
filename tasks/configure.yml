@@ -162,6 +162,9 @@
     creates: "/etc/systemd/system/go-{{ item }}.service"
   register: sansible_gocd_agent_install_cmd_result
   loop: "{{ range(1, sansible_gocd_agent_no_of_agents + 1) | list }}"
+  until: sansible_gocd_agent_install_cmd_result is succeeded
+  retries: 3
+  delay: 5
 
 - name: Ensure startup scripts are registered for SystemD
   become: yes
